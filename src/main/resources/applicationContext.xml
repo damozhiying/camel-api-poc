@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:jaxrs="http://cxf.apache.org/jaxrs" xmlns:camel="http://camel.apache.org/schema/spring"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
+    ">
+
+    <import resource="classpath:META-INF/cxf/cxf.xml"/>
+    <!--
+	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+    -->
+    <!-- === Route(s) ==== -->
+    <camel:camelContext trace="true" xmlns="http://camel.apache.org/schema/spring">
+        <route>
+            <from uri="cxfrs:bean:photoAPIServer?bindingStyle=SimpleConsumer"/>
+            <choice>
+                <when>
+                    <simple>${header.operationName} == 'getPhoto'</simple>
+                    <bean ref="photoService" method="getPhoto"/>
+                </when>
+            </choice>
+        </route>
+    </camel:camelContext>
+
+    <!-- Defined the real JAXRS back end service  -->
+    <jaxrs:server id="photoAPIServer"
+                  address="/api"
+                  serviceClass="org.camelapp.restapi.PhotoResource">
+        <jaxrs:providers>
+            <bean class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider">
+                <property name="mapper" ref="jsonMapper"/>
+            </bean>
+        </jaxrs:providers>
+    </jaxrs:server>
+
+    <bean id="photoService" class="org.camelapp.service.PhotoService" />
+
+    <bean id="jsonMapper" class="com.fasterxml.jackson.databind.ObjectMapper">
+        <property name="serializationInclusion" value="NON_NULL" />
+    </bean>
+</beans>
