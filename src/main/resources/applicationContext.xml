@@ -2,18 +2,29 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:jaxrs="http://cxf.apache.org/jaxrs" xmlns:camel="http://camel.apache.org/schema/spring"
+       xmlns:cxf="http://camel.apache.org/schema/cxf"
        xsi:schemaLocation="
-       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-       http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
-       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://cxf.apache.org/jaxrs
+        http://cxf.apache.org/schemas/jaxrs.xsd
+        http://camel.apache.org/schema/spring
+        http://camel.apache.org/schema/spring/camel-spring.xsd
+        http://camel.apache.org/schema/cxf
+        http://camel.apache.org/schema/cxf/camel-cxf.xsd
     ">
 
-    <import resource="classpath:META-INF/cxf/cxf.xml"/>
-    <!--
-	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
-    -->
+    <import resource="classpath:META-INF/cxf/cxf.xml" />
+    <import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+
     <!-- === Route(s) ==== -->
     <camel:camelContext trace="true" xmlns="http://camel.apache.org/schema/spring">
+        <dataFormats>
+            <xmljson id="xmljson"/>
+            <xmljson id="xmljsonWithOptions" forceTopLevelObject="true" trimSpaces="true" rootName="root" skipNamespaces="true"
+                     removeNamespacePrefixes="true" expandableProperties="d e"/>
+        </dataFormats>
+
         <route>
             <from uri="cxfrs:bean:photoAPIServer?bindingStyle=SimpleConsumer"/>
             <choice>
@@ -23,9 +34,21 @@
                 </when>
             </choice>
         </route>
+
+        <route>
+            <from uri="cxf:bean:photoWS"/>
+            <marshal ref="xmljsonWithOptions"/>
+            <setHeader headerName="CamelHttpMethod">
+                <constant>GET</constant>
+            </setHeader>
+            <!-- TODO: replace "image001" with name parameter -->
+            <to uri="http://localhost:8080/api/photos/image001"/>
+            <unmarshal ref="xmljsonWithOptions" />
+        </route>
     </camel:camelContext>
 
-    <!-- Defined the real JAXRS back end service  -->
+
+    <!-- Define the real JAX-RS back end service  -->
     <jaxrs:server id="photoAPIServer"
                   address="/api"
                   serviceClass="org.camelapp.restapi.PhotoResource">
@@ -36,9 +59,17 @@
         </jaxrs:providers>
     </jaxrs:server>
 
+    <!-- Define the JAX-WS back end service -->
+    <cxf:cxfEndpoint id="photoWS" address="/soap" serviceClass="org.camelapp.soapapi.PhotoEndpoint">
+        <cxf:properties>
+            <entry key="dataFormat" value="MESSAGE"/>
+        </cxf:properties>
+    </cxf:cxfEndpoint>
+
     <bean id="photoService" class="org.camelapp.service.PhotoService" />
 
     <bean id="jsonMapper" class="com.fasterxml.jackson.databind.ObjectMapper">
         <property name="serializationInclusion" value="NON_NULL" />
     </bean>
+
 </beans>
