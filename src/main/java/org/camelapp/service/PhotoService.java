@@ -3,6 +3,7 @@ package org.camelapp.service;
 import org.camelapp.dao.PhotoDAO;
 import org.camelapp.model.Photo;
 import org.camelapp.model.PhotoBuilder;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -14,6 +15,7 @@ public class PhotoService {
         this.photoDAO = photoDAO;
     }
 
+    @Transactional
     public Photo getPhoto(String name) {
         Photo photo = new PhotoBuilder().setCaption("caption for " + name).setName(name).createPhoto();
 

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import javax.persistence.*;
 import java.util.List;
 
-//@Repository
+@Repository
 public class PhotoDAO extends AbstractJpaDAO<Photo> {
     public PhotoDAO() {
         setClazz(Photo.class);
