@@ -1,6 +1,5 @@
 package org.camelapp.dao;
 
-import org.camelapp.model.Photo;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.*;
@@ -29,7 +28,7 @@ public abstract class AbstractJpaDAO<T> {
         entityManager.persist(entity);
     }
 
-    public List<Photo> findAll() {
+    public List<T> findAll() {
         return entityManager.createQuery("from " + this.clazz.getName()).getResultList();
     }
 
