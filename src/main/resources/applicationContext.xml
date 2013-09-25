@@ -102,7 +102,14 @@
         <property name="url" value="jdbc:derby:memory:mydb;create=true" />
     </bean>
 
-    <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+    <!--<bean id="dbMigrate" class="org.camelapp.dao.DBMigrate">-->
+        <!--<constructor-arg ref="embedded-datasource" />-->
+    <!--</bean>-->
+    <bean id="flyway" class="com.googlecode.flyway.core.Flyway" init-method="migrate">
+        <property name="dataSource" ref="embedded-datasource"/>
+    </bean>
+
+    <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean" depends-on="flyway">
         <property name="packagesToScan" value="org.camelapp" />
         <property name="dataSource" ref="embedded-datasource" />
         <property name="persistenceXmlLocation" value="classpath:persistence.xml" />
@@ -116,7 +123,7 @@
         </property>
         <property name="jpaProperties">
             <props>
-                <prop key="hibernate.hbm2ddl.auto">update</prop>
+                <!--<prop key="hibernate.hbm2ddl.auto">update</prop>-->
             </props>
         </property>
     </bean>

@@ -17,9 +17,9 @@ public class PhotoService {
 
     @Transactional
     public Photo getPhoto(String name) {
-        Photo photo = new PhotoBuilder().setCaption("caption for " + name).setName(name).createPhoto();
+//        Photo photo = new PhotoBuilder().setCaption("caption for " + name).setName(name).createPhoto();
 
-        photoDAO.save(photo);
+//        photoDAO.save(photo);
 
         List<Photo> photos = photoDAO.findAll();
         Photo retrievedPhoto = photos.get(photos.size() - 1);
